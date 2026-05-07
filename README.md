@@ -1,0 +1,1 @@
+# Manual3_ConcurrenteParalela
