@@ -1,4 +1,0 @@
-En un anillo de procesos, el proceso con identificador- i tiene por vecinos con los que se puede
-comunicar a los procesos (i-1) e (i+1), estando el primer proceso y el último conectados entre
-sí. Escriba un programa concurrente en Java usando paso de mensajes que haga circular un
-token (mensaje cualquiera) en un anillo de procesos de forma infinita.
