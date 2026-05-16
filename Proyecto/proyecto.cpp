@@ -12,29 +12,32 @@ using namespace std;
 #define NUM_TELS_TOTALES 10  // Definimos el número total de teléfonos como constante
 #define NUM_EST_TOTALES 7    // Definimos el número de todos los estados posibles
 
-// Creamos las constantes de estados para cada uno de los casos en los que se pueda encontrar el teléfono ya sea ante el
-// usuario o ante la central
+/*
+    Creamos las constantes de estados para cada uno de los casos en los que se pueda encontrar el teléfono ya sea ante
+    el usuario o ante la central
+*/
 enum Estado { COLG_ESPERA, COLG_LLAMADA, DESC_SENIAL, DESC_MARCANDO, DESC_LLAMANDO, DESC_OCUPADO, DESC_HABLANDO };
 
 /*
-        Se crea un struct que nos indica el estado del telefono y permite asignar su correspondiente mensaje de estado
-        (este es el medio de comunicación (paquete de datos como estructura genérica) entre el monitor y el teléfono)
+    Se crea un struct que nos indica el estado del telefono y permite asignar su correspondiente mensaje de estado
+    (este es el medio de comunicación (paquete de datos como estructura genérica) entre el monitor y el teléfono)
 */
 struct Estado_Mensaje {
     Estado estadoActual;
     string mensajeMonitorTel;
 };
 
-// Recurso compartido (Monitor: Central Telefónica)
+// (Monitor: Central Telefónica)
 class Central {
    public:
     // Catalogo de todos los estados y mensajes posibles
     Estado_Mensaje catalogo[NUM_EST_TOTALES];
 
-    // Generamos las estructuras para el monitoreo de los teléfonos conectados
+    // Generamos las estructuras para el monitoreo de los teléfonos conectados (Recursos compartidos)
     Estado estadosTel[NUM_TELS_TOTALES];
     int conectadoCon[NUM_TELS_TOTALES];
 
+    // Variables para la exclusión mutua
     mutex candado;
     condition_variable vc_cambioEstado;
     condition_variable vc_esperaComunicacion;
@@ -67,6 +70,7 @@ class Central {
 
         paquete.estadoActual = estadosTel[numTel];
 
+        // Inicializamos el mensaje correpondiente al estado del teléfono que la central esté gestionando en el momento
         switch (paquete.estadoActual) {
             case DESC_MARCANDO:
                 paquete.mensajeMonitorTel = "Teléfono marcando a " + to_string(conectadoCon[numTel]);
@@ -83,11 +87,12 @@ class Central {
         return paquete;
     }
 
-    // Funciones que reflejan las posibles acciones del usuario sobre el teléfono
+    // Funciones que reflejan las posibles acciones del usuario sobre el teléfono, que el teléfono comunica a su vez con
+    // la central
     void marcar(int numTel, int numAMarcar) {
         /*
-            Solo establecemos la conexión del lado del que marca porque no sabemos si el otro teléfono está
-            disponible y ahorita lo que estamos registrando son las teclas que pulsa el usuario y detecta el telefono
+            Solo establecemos la conexión del lado del teléfono que marca porque no sabemos si el otro teléfono está
+            disponible y lo que estamos registrando son las teclas que pulsa el usuario y detecta el telefono
         */
         unique_lock<mutex> lk(candado);
 
@@ -95,23 +100,6 @@ class Central {
         estadosTel[numTel] = DESC_MARCANDO;
 
         lk.unlock();
-        vc_cambioEstado.notify_all();
-    }
-
-    void conectar(int numTel) {
-        unique_lock<mutex> lk(candado);
-
-        int otroTelefono = conectadoCon[numTel];
-        if ((otroTelefono != -1) && (estadosTel[otroTelefono] == COLG_ESPERA)) {
-            estadosTel[numTel] = DESC_LLAMANDO;
-            estadosTel[otroTelefono] = COLG_LLAMADA;
-
-            conectadoCon[otroTelefono] = numTel;
-        } else
-            estadosTel[numTel] = DESC_OCUPADO;
-
-        lk.unlock();
-        vc_esperaComunicacion.notify_all();
         vc_cambioEstado.notify_all();
     }
 
@@ -157,6 +145,25 @@ class Central {
         return;
     }
 
+    // Funciones que realiza internamente la central para gestionar la transición de estados al intentar comunicarse un
+    // teléfono con otro
+    void conectar(int numTel) {
+        unique_lock<mutex> lk(candado);
+
+        int otroTelefono = conectadoCon[numTel];
+        if ((otroTelefono != -1) && (estadosTel[otroTelefono] == COLG_ESPERA)) {
+            estadosTel[numTel] = DESC_LLAMANDO;
+            estadosTel[otroTelefono] = COLG_LLAMADA;
+
+            conectadoCon[otroTelefono] = numTel;
+        } else
+            estadosTel[numTel] = DESC_OCUPADO;
+
+        lk.unlock();
+        vc_esperaComunicacion.notify_all();
+        vc_cambioEstado.notify_all();
+    }
+
     void esperarContestacion(int numTel) {
         unique_lock<mutex> lk(candado);
 
@@ -172,11 +179,10 @@ class Central {
 class Telefono {
    public:
     int numTel;
-    Central* central;
+    Central* central;  // Pasamos una sola central a todos los telefonos por medio de apuntadores
 
-    // Mensaje que el teléfono muestra al usuario
-    Estado_Mensaje estadoTel;
-    string mensajeTelUser;
+    Estado_Mensaje estadoTel;  // Paquete de datos que indica estado del telefono
+    string mensajeTelUser;     // Mensaje que el teléfono muestra al usuario
 
    public:
     Telefono(int numTel, Central* central) {
@@ -187,6 +193,7 @@ class Telefono {
     void operator()() {
         // Variables para generar los números aleatorios que representan la decisión del usuario
         random_device rd;
+        // Se indica como "static thread_local" para que exista un generador distinto por hilo
         static thread_local mt19937 gen(rd());
         uniform_int_distribution<> decision(0, 1);
 
@@ -208,9 +215,10 @@ class Telefono {
         // Utilizamos un bucle while(true) para que los teléfonos estén siempre activos hasta que se
         // interrumpa la ejecución (CNTRL-C)
         while (true) {
-            // Generamos el paquete de datos del estado que haya obtenido la central
+            // Obtenemos el paquete de datos del estado que haya generado la central
             estadoTel = central->getEstado(numTel);
 
+            // Si el estado del telefono cambia se imprime y actualizamos "ultimoEstado"
             if (estadoTel.estadoActual != ultimoEstado) {
                 mensajeTelUser = "[Teléfono " + to_string(numTel) + "]: " + estadoTel.mensajeMonitorTel + "\n";
                 cout << mensajeTelUser;
@@ -224,27 +232,37 @@ class Telefono {
             switch (estadoTel.estadoActual) {
                 case (COLG_ESPERA):
                 case (COLG_LLAMADA):
+                    // Si es que el telefono está colgado, decide si descolgarlo o no
                     if (decisionUsuario) central->descolgar(numTel);
                     break;
 
                 case (DESC_SENIAL):
+                    // En este caso "decisionUsuario" indica si es que se tiene la decisión de marcar una vez que el
+                    // teléfono está descolgado y dando señal
                     if (decisionUsuario) {
                         do numAMarcar = pensarNumero(gen);
                         while (numAMarcar == numTel);
                         central->marcar(numTel, numAMarcar);
                     } else
+                        // De no ser así, decide colgar
                         central->colgar(numTel);
                     break;
 
                 case (DESC_MARCANDO):
+                    // Una vez que se encuentra marcando el número la central se pone a trabajar para registrar los
+                    // datos necesarios
                     central->conectar(numTel);
                     break;
 
                 case (DESC_LLAMANDO):
+                    // Mientras se llama, la central gestiona la espera de nuestro teléfono y la conectividad con el
+                    // teléfono de destino
                     central->esperarContestacion(numTel);
                     break;
                 case (DESC_OCUPADO):
                 case (DESC_HABLANDO):
+                    // Independientemente de si el otro teléfono le respondió o no, el usuario siempre tiene la elección
+                    // de colgar en cualquier momento
                     if (decisionUsuario) central->colgar(numTel);
                     break;
             }
