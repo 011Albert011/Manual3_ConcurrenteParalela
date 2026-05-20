@@ -1,0 +1,64 @@
+===== TRANSACCIONES VALIDAS |  =====
+----------------------------------------
+	ID transaccion: TRN70638
+	ID cliente: CLT3570
+	Monto transaccion: 19064.00
+	Pais origen: Canadá
+	Nivel de riesgo: NORMAL
+	Hora transaccion: 11:00:00
+	Valida: VERDADERO
+	Sospechosa: FALSO
+----------------------------------------
+	ID transaccion: TRN89526
+	ID cliente: CLT7139
+	Monto transaccion: 19679.00
+	Pais origen: Venezuela
+	Nivel de riesgo: ALTO_RIESGO
+	Hora transaccion: 10:00:00
+	Valida: VERDADERO
+	Sospechosa: VERDADERO
+
+	Motivo: Pais de alto riesgo
+----------------------------------------
+	ID transaccion: TRN27753
+	ID cliente: CLT7926
+	Monto transaccion: 47621.00
+	Pais origen: Venezuela
+	Nivel de riesgo: ALTO_RIESGO
+	Hora transaccion: 09:00:00
+	Valida: VERDADERO
+	Sospechosa: VERDADERO
+
+	Motivo: Pais de alto riesgo
+----------------------------------------
+	ID transaccion: TRN55000
+	ID cliente: CLT1603
+	Monto transaccion: 37157.00
+	Pais origen: Colombia
+	Nivel de riesgo: ALTO_RIESGO
+	Hora transaccion: 08:00:00
+	Valida: VERDADERO
+	Sospechosa: VERDADERO
+
+	Motivo: Pais de alto riesgo
+----------------------------------------
+	ID transaccion: TRN40645
+	ID cliente: CLT2336
+	Monto transaccion: 24624.00
+	Pais origen: Japón
+	Nivel de riesgo: NORMAL
+	Hora transaccion: 10:00:00
+	Valida: VERDADERO
+	Sospechosa: FALSO
+----------------------------------------
+	ID transaccion: TRN52473
+	ID cliente: CLT8624
+	Monto transaccion: 7820.00
+	Pais origen: Venezuela
+	Nivel de riesgo: ALTO_RIESGO
+	Hora transaccion: 13:00:00
+	Valida: VERDADERO
+	Sospechosa: VERDADERO
+
+	Motivo: Pais de alto riesgo
+----------------------------------------

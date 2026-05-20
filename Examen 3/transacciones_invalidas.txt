@@ -1,0 +1,46 @@
+===== TRANSACCIONES INVALIDAS |  =====
+----------------------------------------
+	ID transaccion: TRN85913
+	ID cliente: CLT7418
+	Monto transaccion: 36404.00
+	Pais origen: Venezuela
+	Nivel de riesgo: ALTO_RIESGO
+	Hora transaccion: 14:00:00
+	Valida: FALSO
+	Sospechosa: FALSO
+
+	Motivo: Fuera de horario
+----------------------------------------
+	ID transaccion: TRN63874
+	ID cliente: CLT4321
+	Monto transaccion: 41513.00
+	Pais origen: Brasil
+	Nivel de riesgo: NORMAL
+	Hora transaccion: 13:00:00
+	Valida: FALSO
+	Sospechosa: FALSO
+
+	Motivo: Pais no registrado
+----------------------------------------
+	ID transaccion: TRN52956
+	ID cliente: CLT246
+	Monto transaccion: 8595.00
+	Pais origen: Canadá
+	Nivel de riesgo: NORMAL
+	Hora transaccion: 07:00:00
+	Valida: FALSO
+	Sospechosa: FALSO
+
+	Motivo: Fuera de horario
+----------------------------------------
+	ID transaccion: TRN55286
+	ID cliente: CLT4557
+	Monto transaccion: 14377.00
+	Pais origen: Venezuela
+	Nivel de riesgo: ALTO_RIESGO
+	Hora transaccion: 07:00:00
+	Valida: FALSO
+	Sospechosa: FALSO
+
+	Motivo: Fuera de horario
+----------------------------------------
