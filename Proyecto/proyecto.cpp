@@ -220,11 +220,6 @@ class Central {
 
                 estadosTel[numTel] = DESC_OCUPADO;
                 conectadoCon[numTel] = -1;
-            } else if (estadosTel[otroTelefono] == DESC_HABLANDO && estadosTel[numTel] == DESC_HABLANDO) {
-                unique_lock<mutex> lk_p(mutex_pantalla);
-                cout << "\n(Central verifica: Enlace exitoso establecido entre " << numTel << " y " << otroTelefono
-                     << ")\n\n";
-                lk_p.unlock();
             }
         }
 
